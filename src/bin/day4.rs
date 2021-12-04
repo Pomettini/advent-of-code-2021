@@ -17,23 +17,32 @@ fn find_board(numbers: &[u16], boards: &[Board], request: RequestType) -> u16 {
     for current_number in numbers {
         for (b, current_board) in board_instance.clone().iter().enumerate() {
             for (l, current_line) in current_board.iter().enumerate() {
+                if winning_boards[b] {
+                    continue;
+                }
+
                 if let Some(x) = current_line.iter().position(|&i| i == *current_number) {
                     board_instance[b][l][x] = MAXVALUE;
                 }
 
-                if board_instance[b][l].iter().sum::<u16>() == 5 * MAXVALUE {
-                    if winning_boards[b] {
-                        continue;
-                    }
+                let mut acc = 0;
+                for i in 0..5 {
+                    acc += board_instance[b][i][l];
+                }
 
-                    if request == RequestType::First {
+                if board_instance[b][l].iter().sum::<u16>() != 5 * MAXVALUE && acc != 5 * MAXVALUE {
+                    continue;
+                }
+
+                if request == RequestType::First {
+                    return calculate_score(&board_instance[b], *current_number);
+                }
+
+                if request == RequestType::Last {
+                    winning_boards[b] = true;
+
+                    if !winning_boards.contains(&false) {
                         return calculate_score(&board_instance[b], *current_number);
-                    } else {
-                        winning_boards[b] = true;
-
-                        if !winning_boards.contains(&false) {
-                            return calculate_score(&board_instance[b], *current_number);
-                        }
                     }
                 }
             }
@@ -86,9 +95,7 @@ fn main() {
 
     assert_eq!(first, 50008);
 
-    // let second = find_board(&numbers, &boards, RequestType::Last);
+    let second = find_board(&numbers, &boards, RequestType::Last);
 
-    // I cheated again
-
-    // assert_eq!(second, 17408);
+    assert_eq!(second, 17408);
 }
