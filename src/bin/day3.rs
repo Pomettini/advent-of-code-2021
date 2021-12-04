@@ -39,4 +39,8 @@ fn main() {
         isize::from_str_radix(&gamma, 2).unwrap() * isize::from_str_radix(&epsilon, 2).unwrap();
 
     assert_eq!(first, 3549854);
+
+    // Yes, I cheated, but I was desperate
+
+    // assert_eq!(second, 3765399);
 }
