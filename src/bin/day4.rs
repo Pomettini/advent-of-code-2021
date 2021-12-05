@@ -3,6 +3,7 @@ use itertools::Itertools;
 type Board = Vec<Vec<u16>>;
 
 const MAXVALUE: u16 = 255;
+const MATRIX_SIZE: usize = 5;
 
 #[derive(PartialEq)]
 enum RequestType {
@@ -44,8 +45,8 @@ fn find_board(numbers: &[u16], boards: &[Board], request: RequestType) -> u16 {
 }
 
 fn mark_number_on_board(board: &mut Board, number: u16) {
-    for row in board.iter_mut().take(5) {
-        for col in row.iter_mut().take(5) {
+    for row in board.iter_mut().take(MATRIX_SIZE) {
+        for col in row.iter_mut().take(MATRIX_SIZE) {
             if *col == number {
                 *col = MAXVALUE;
             }
@@ -54,26 +55,26 @@ fn mark_number_on_board(board: &mut Board, number: u16) {
 }
 
 fn check_board_win(board: &Board) -> bool {
-    let mut horizontal_score = 0;
-    let mut vertical_score = 0;
-    for i in 0..5 {
-        horizontal_score = 0;
-        for j in 0..5 {
+    for i in 0..MATRIX_SIZE {
+        let mut horizontal_score = 0;
+        for j in 0..MATRIX_SIZE {
             horizontal_score += board[i][j];
         }
-        if horizontal_score == MAXVALUE * 5 {
+        if horizontal_score == MAXVALUE * MATRIX_SIZE as u16 {
             return true;
         }
     }
-    for j in 0..5 {
-        vertical_score = 0;
-        for i in 0..5 {
+
+    for j in 0..MATRIX_SIZE {
+        let mut vertical_score = 0;
+        for i in 0..MATRIX_SIZE {
             vertical_score += board[i][j];
         }
-        if vertical_score == MAXVALUE * 5 {
+        if vertical_score == MAXVALUE * MATRIX_SIZE as u16 {
             return true;
         }
     }
+
     false
 }
 
@@ -101,7 +102,7 @@ fn main() {
     let boards: Vec<Board> = input
         .lines()
         .skip(1)
-        .chunks(6)
+        .chunks(MATRIX_SIZE + 1)
         .into_iter()
         .map(|board| {
             board
