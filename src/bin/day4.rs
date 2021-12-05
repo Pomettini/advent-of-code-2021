@@ -15,34 +15,26 @@ fn find_board(numbers: &[u16], boards: &[Board], request: RequestType) -> u16 {
     let mut winning_boards = vec![false; boards.len()];
 
     for current_number in numbers {
-        for (b, current_board) in board_instance.clone().iter().enumerate() {
-            for (l, current_line) in current_board.iter().enumerate() {
-                if winning_boards[b] {
-                    continue;
-                }
+        for index in 0..board_instance.len() {
+            mark_number_on_board(&mut board_instance[index], *current_number);
 
-                if let Some(x) = current_line.iter().position(|&i| i == *current_number) {
-                    board_instance[b][l][x] = MAXVALUE;
-                }
+            if winning_boards[index] {
+                continue;
+            }
 
-                let mut acc = 0;
-                for i in 0..5 {
-                    acc += board_instance[b][i][l];
-                }
+            if !check_board_win(&board_instance[index]) {
+                continue;
+            }
 
-                if board_instance[b][l].iter().sum::<u16>() != 5 * MAXVALUE && acc != 5 * MAXVALUE {
-                    continue;
+            match request {
+                RequestType::First => {
+                    return calculate_score(&board_instance[index], *current_number);
                 }
-
-                if request == RequestType::First {
-                    return calculate_score(&board_instance[b], *current_number);
-                }
-
-                if request == RequestType::Last {
-                    winning_boards[b] = true;
+                RequestType::Last => {
+                    winning_boards[index] = true;
 
                     if !winning_boards.contains(&false) {
-                        return calculate_score(&board_instance[b], *current_number);
+                        return calculate_score(&board_instance[index], *current_number);
                     }
                 }
             }
@@ -51,11 +43,46 @@ fn find_board(numbers: &[u16], boards: &[Board], request: RequestType) -> u16 {
     0
 }
 
+fn mark_number_on_board(board: &mut Board, number: u16) {
+    for row in board.iter_mut().take(5) {
+        for col in row.iter_mut().take(5) {
+            if *col == number {
+                *col = MAXVALUE;
+            }
+        }
+    }
+}
+
+fn check_board_win(board: &Board) -> bool {
+    let mut horizontal_score = 0;
+    let mut vertical_score = 0;
+    for i in 0..5 {
+        horizontal_score = 0;
+        for j in 0..5 {
+            horizontal_score += board[i][j];
+        }
+        if horizontal_score == MAXVALUE * 5 {
+            return true;
+        }
+    }
+    for j in 0..5 {
+        vertical_score = 0;
+        for i in 0..5 {
+            vertical_score += board[i][j];
+        }
+        if vertical_score == MAXVALUE * 5 {
+            return true;
+        }
+    }
+    false
+}
+
 fn calculate_score(current_board: &Board, current_number: u16) -> u16 {
-    let sum = current_board
-        .iter()
-        .flatten()
-        .fold(0, |a, v| if *v != MAXVALUE { a + *v } else { a });
+    let sum =
+        current_board.iter().flatten().fold(
+            0,
+            |acc, val| if *val != MAXVALUE { acc + *val } else { acc },
+        );
 
     sum * current_number
 }
